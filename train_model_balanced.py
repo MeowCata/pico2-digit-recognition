@@ -178,7 +178,7 @@ def main() -> None:
     print(f"Rounded test accuracy: {rounded_acc:.4f}")
     print(f"Rounded correct-confidence: {rounded_correct_conf:.4f}")
 
-    out_path = Path(__file__).with_name("pico_model_balanced.py")
+    out_path = Path(__file__).with_name("pico_model.py")
     export_model(out_path, scaler, mlp)
     print(f"Exported: {out_path}")
     print(f"Export size: {out_path.stat().st_size} bytes")

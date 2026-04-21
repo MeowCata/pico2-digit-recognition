@@ -6,7 +6,7 @@ import json
 import math
 
 try:
-    from pico_model_balanced import SCALER_MEAN, SCALER_SCALE, WEIGHTS1, BIASES1, WEIGHTS2, BIASES2
+    from pico_model import SCALER_MEAN, SCALER_SCALE, WEIGHTS1, BIASES1, WEIGHTS2, BIASES2
 except Exception as e:
     print(json.dumps({"error": "model_import_failed", "detail": str(e)}))
     raise

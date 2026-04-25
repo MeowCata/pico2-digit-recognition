@@ -7,10 +7,12 @@
 A lightweight handwritten digit recognizer running **entirely on Pi Pico 2** using *CircuitPython* and a compact MLP model trained on MNIST.
 
 ## Features
-- On-device handwritten digit recognition on Pi Pico 2
-- Compact MLP model trained from MNIST with 32 hidden units (~97% accuracy on test datasets)
-- Serial drawing interface on PC
-- **Fully local inference** in CircuitPython (~1s computing)
+- **Fully on-device handwritten digit recognition** on Raspberry Pi Pico 2
+- Tiny MLP (32 hidden units) with ~97% MNIST test accuracy
+- PCA fused into model weights for true MCU-side inference
+- Quantized lightweight model optimized for CircuitPython
+- PC drawing UI over serial
+- ~1 second inference on Pico 2
 
 ## Screenshot
 <img width="422" height="266" alt="image" src="https://github.com/user-attachments/assets/a9a90188-5dec-4783-95c2-507759cbebf1" />
@@ -49,13 +51,25 @@ Finally, upload the files to Pico. Please drag-and-drop `code.py`(**renamed from
 Once the files are uploaded, run `ui.py` on your PC, select the serial port, and test the model.
 
 ## Releases
-  [v1.1](https://github.com/MeowCata/pico2-digit-recognition/releases/tag/MLP_hu32_1): Recommended version. Images are shown above.
 
-  [Legacy](https://github.com/MeowCata/pico2-digit-recognition/releases/tag/MLP_hu64): A heavier model with a simplified UI:
-- The initial version of MNIST model can be found in this release, shown as `mnistpico.zip`. It uses the PC to compute PCA, but our goal aims at performing every compute just on Pico board, so it was deprecated.
-- A refined version, also in Legacy Release, contains a simple UI but a powerful model (64 hidden units). However, it was discarded due to slow inference on Pico.
+### v1.1 (Recommended)
+- PCA is fused into the model during training — an integrated approach I really like.
+- 32 hidden-unit compact model optimized for Pico 2.
+- Special thanks to Gemini for the inspiration.
 
-## Info & Thanks to
+### Legacy
+Contains two earlier experiments:
+
+1. `mnistpico.zip`
+- PCA computed on PC
+- Deprecated because the goal was fully on-device inference
+
+2. 64-hidden-unit model
+- Higher accuracy
+- Slower inference on Pico, therefore discontinued
+
+## Acknowledgements
+> Vibe coded using:
 > - Gemini 3.1 Pro - template, model & UI refinement, plus cleaning up some early GPT-generated spaghetti
 > - DeepSeek v4-flash - UI enhancement & port selector
 > - ChatGPT - writing code for the initial version of using MNIST model (code in Legacy Release, `mnistpico.zip`) 

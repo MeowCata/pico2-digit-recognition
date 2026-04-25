@@ -10,7 +10,7 @@ try:
     with open("pico_mnist_model.json", "r") as f:
         model_data = json.load(f)
         
-    HIDDEN_UNITS = model_data["h_units"]
+    HIDDEN_UNITS = model_data["h_units"] # 会加载为 32
     LOGIT_SCALE = model_data["log_s"]
     WEIGHTS1 = model_data["w1"]
     BIASES1 = model_data["b1"]
@@ -19,7 +19,6 @@ try:
     BIASES2 = model_data["b2"]
     W2_SCALE = model_data["w2_s"]
     
-    # 强制释放解析大型 JSON 树时产生的极其庞大的中间字典内存占用
     del model_data
     gc.collect()
     
@@ -54,12 +53,11 @@ def softmax(logits):
     return [e / total for e in exps]
 
 
-def predict(features):
+def predict_top2(features):
     hidden = [0.0] * HIDDEN_UNITS
     for i in range(HIDDEN_UNITS):
         acc = BIASES1[i]
         row = WEIGHTS1[i]
-        # 直接利用融合后的参数处理 784 个未降维的像素输入，一步完成全部变换与网络传播
         for j in range(784):
             acc += features[j] * (row[j] * W1_SCALE)
         hidden[i] = relu(acc)
@@ -73,13 +71,16 @@ def predict(features):
         logits[i] = acc * LOGIT_SCALE
 
     probs = softmax(logits)
-    best = 0
-    best_p = probs[0]
-    for i in range(1, 10):
-        if probs[i] > best_p:
-            best_p = probs[i]
-            best = i
-    return best, best_p * 100.0
+    
+    # 获取置信度最高的两个
+    idx_conf = []
+    for i in range(10):
+        idx_conf.append((i, probs[i] * 100.0))
+    
+    # 按 Conf 值排序 (降序)
+    idx_conf.sort(key=lambda x: x[1], reverse=True)
+    
+    return idx_conf[0], idx_conf[1]
 
 
 print("Ready")
@@ -100,16 +101,18 @@ while True:
             continue
 
         if not isinstance(features, list) or len(features) != 784:
-            print(json.dumps({
-                "error": "bad_feature_length",
-                "expected": 784,
-                "got": len(features) if isinstance(features, list) else None,
-            }))
             continue
 
         blink_led()
-        digit, conf = predict(features)
-        print(json.dumps({"digit": digit, "confidence": conf}))
+        # 核心通信修改：现在返回前两位结果
+        best1, best2 = predict_top2(features)
+        
+        # 返回 JSON 协议更新:
+        # {"digit1": 3, "conf1": 98.2, "digit2": 5, "conf2": 1.5}
+        print(json.dumps({
+            "digit1": best1[0], "conf1": best1[1],
+            "digit2": best2[0], "conf2": best2[1]
+        }))
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))
